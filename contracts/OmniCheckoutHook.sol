@@ -2,7 +2,7 @@
 pragma solidity ^0.8.19;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 /**
@@ -48,7 +48,7 @@ contract OmniCheckoutHook is ReentrancyGuard, Ownable {
         address _usdc,
         address _charityAddress,
         uint256 _charityPercentage
-    ) {
+    ) Ownable(msg.sender) {
         if (_usdc == address(0)) revert InvalidCharityAddress();
         if (_charityAddress == address(0)) revert InvalidCharityAddress();
         if (_charityPercentage > 1000) revert InvalidPercentage(); // Max 10%

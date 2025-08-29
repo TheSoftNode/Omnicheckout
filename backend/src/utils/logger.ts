@@ -1,4 +1,4 @@
-import winston from 'winston'
+import * as winston from 'winston'
 
 export const createLogger = (service: string) => {
   const logLevel = process.env.LOG_LEVEL || 'info'
@@ -28,3 +28,6 @@ export const createLogger = (service: string) => {
     ]
   })
 }
+
+// Default logger instance
+export const logger = createLogger('OmniCheckout')

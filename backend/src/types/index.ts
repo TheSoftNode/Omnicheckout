@@ -29,8 +29,14 @@ export interface ChainInfo {
   usdcAddress: string
   tokenMessengerAddress: string
   messageTransmitterAddress: string
+  tokenMinterAddress: string // Added for production completeness
+  messageV2Address: string // Added for production completeness
   destinationDomain: number
   isTestnet: boolean
+  blockConfirmations: {
+    fast: number
+    standard: number
+  }
   logo?: string
 }
 

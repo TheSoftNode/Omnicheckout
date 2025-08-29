@@ -1,206 +1,38 @@
 import { Router } from 'express'
-import { v4 as uuidv4 } from 'uuid'
-import { ApiResponse, PaymentSession, PaymentStatus, SupportedChainId } from '../types'
-import { createLogger } from '../utils/logger'
+import paymentController from '../controllers/paymentController'
+import { rateLimiterMiddleware } from '../middleware/rateLimiter'
+import { validateApiKey } from '../middleware/auth'
 
 const router = Router()
-const logger = createLogger('PaymentRoutes')
 
-// In-memory storage for demo (use database in production)
-const paymentSessions = new Map<string, PaymentSession>()
+// Apply middleware
+router.use(validateApiKey)
+router.use(rateLimiterMiddleware)
 
-// Create payment session
-router.post('/session', async (req, res, next) => {
-  try {
-    const { 
-      merchantId, 
-      merchantWalletAddress, 
-      preferredChain, 
-      amount,
-      metadata 
-    } = req.body
+// Payment Session Routes
+router.post('/sessions', paymentController.createPaymentSession.bind(paymentController))
+router.get('/sessions/:sessionId', paymentController.getPaymentSession.bind(paymentController))
+router.put('/sessions/:sessionId', paymentController.updatePaymentSession.bind(paymentController))
+router.get('/sessions', paymentController.listPaymentSessions.bind(paymentController))
 
-    // Validate required fields
-    if (!merchantId || !merchantWalletAddress || !preferredChain || !amount) {
-      return res.status(400).json({
-        success: false,
-        error: 'Missing required fields: merchantId, merchantWalletAddress, preferredChain, amount',
-        timestamp: new Date().toISOString()
-      })
-    }
+// Circle API Integration Routes
+router.post('/circle/payments', paymentController.createCirclePayment.bind(paymentController))
+router.get('/circle/payments/:paymentId', paymentController.getCirclePayment.bind(paymentController))
+router.post('/circle/transfers', paymentController.createCircleTransfer.bind(paymentController))
+router.post('/circle/payouts', paymentController.createCirclePayout.bind(paymentController))
 
-    // Validate amount
-    const numAmount = parseFloat(amount)
-    if (isNaN(numAmount) || numAmount <= 0) {
-      return res.status(400).json({
-        success: false,
-        error: 'Amount must be a positive number',
-        timestamp: new Date().toISOString()
-      })
-    }
+// USDC Transfer Routes
+router.post('/usdc/transfer', paymentController.initiateUSDCTransfer.bind(paymentController))
 
-    // Create payment session
-    const sessionId = uuidv4()
-    const now = new Date()
-    const expiresAt = new Date(now.getTime() + 30 * 60 * 1000) // 30 minutes
+// Analytics and Quotes Routes
+router.get('/analytics/:merchantId', paymentController.getPaymentAnalytics.bind(paymentController))
+router.get('/quotes', paymentController.getPaymentQuote.bind(paymentController))
 
-    const session: PaymentSession = {
-      sessionId,
-      merchantId,
-      merchantWalletAddress,
-      preferredChain: parseInt(preferredChain),
-      destinationChain: parseInt(preferredChain),
-      amount: amount.toString(),
-      status: PaymentStatus.CREATED,
-      createdAt: now,
-      updatedAt: now,
-      expiresAt,
-      metadata
-    }
+// Merchant Settings Routes
+router.get('/merchants/:merchantId/settings', paymentController.getMerchantSettings.bind(paymentController))
+router.put('/merchants/:merchantId/settings', paymentController.updateMerchantSettings.bind(paymentController))
 
-    paymentSessions.set(sessionId, session)
-
-    logger.info('Payment session created', { sessionId, merchantId, amount })
-
-    const response: ApiResponse<PaymentSession> = {
-      success: true,
-      data: session,
-      timestamp: new Date().toISOString()
-    }
-
-    res.status(201).json(response)
-  } catch (error) {
-    next(error)
-  }
-})
-
-// Get payment session
-router.get('/session/:sessionId', async (req, res, next) => {
-  try {
-    const { sessionId } = req.params
-
-    const session = paymentSessions.get(sessionId)
-    if (!session) {
-      return res.status(404).json({
-        success: false,
-        error: 'Payment session not found',
-        timestamp: new Date().toISOString()
-      })
-    }
-
-    // Check if session is expired
-    if (new Date() > session.expiresAt) {
-      session.status = PaymentStatus.EXPIRED
-      session.updatedAt = new Date()
-      paymentSessions.set(sessionId, session)
-    }
-
-    const response: ApiResponse<PaymentSession> = {
-      success: true,
-      data: session,
-      timestamp: new Date().toISOString()
-    }
-
-    res.json(response)
-  } catch (error) {
-    next(error)
-  }
-})
-
-// Update payment session
-router.put('/session/:sessionId', async (req, res, next) => {
-  try {
-    const { sessionId } = req.params
-    const updates = req.body
-
-    const session = paymentSessions.get(sessionId)
-    if (!session) {
-      return res.status(404).json({
-        success: false,
-        error: 'Payment session not found',
-        timestamp: new Date().toISOString()
-      })
-    }
-
-    // Update allowed fields
-    const allowedUpdates = [
-      'sourceChain',
-      'customerAddress',
-      'status',
-      'transactionHash',
-      'attestationHash',
-      'mintTransactionHash',
-      'metadata'
-    ]
-
-    for (const key of Object.keys(updates)) {
-      if (allowedUpdates.includes(key)) {
-        (session as any)[key] = updates[key]
-      }
-    }
-
-    session.updatedAt = new Date()
-    paymentSessions.set(sessionId, session)
-
-    logger.info('Payment session updated', { sessionId, updates })
-
-    const response: ApiResponse<PaymentSession> = {
-      success: true,
-      data: session,
-      timestamp: new Date().toISOString()
-    }
-
-    res.json(response)
-  } catch (error) {
-    next(error)
-  }
-})
-
-// List payment sessions for a merchant
-router.get('/sessions', async (req, res, next) => {
-  try {
-    const { merchantId, status, limit = '10', offset = '0' } = req.query
-
-    let sessions = Array.from(paymentSessions.values())
-
-    // Filter by merchant
-    if (merchantId) {
-      sessions = sessions.filter(s => s.merchantId === merchantId)
-    }
-
-    // Filter by status
-    if (status) {
-      sessions = sessions.filter(s => s.status === status)
-    }
-
-    // Sort by creation date (newest first)
-    sessions.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-
-    // Pagination
-    const limitNum = parseInt(limit as string, 10)
-    const offsetNum = parseInt(offset as string, 10)
-    const paginatedSessions = sessions.slice(offsetNum, offsetNum + limitNum)
-
-    const response: ApiResponse<{
-      sessions: PaymentSession[]
-      total: number
-      limit: number
-      offset: number
-    }> = {
-      success: true,
-      data: {
-        sessions: paginatedSessions,
-        total: sessions.length,
-        limit: limitNum,
-        offset: offsetNum
-      },
-      timestamp: new Date().toISOString()
-    }
-
-    res.json(response)
-  } catch (error) {
-    next(error)
-  }
-})
+// Health Check Route
+router.get('/health', paymentController.healthCheck.bind(paymentController))
 
 export { router as paymentRoutes }

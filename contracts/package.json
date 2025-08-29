@@ -1,0 +1,70 @@
+{
+  "name": "omnicheckout-contracts",
+  "version": "1.0.0",
+  "description": "Smart contracts for the OmniCheckout CCTP V2 hooks implementation",
+  "main": "index.js",
+  "scripts": {
+    "build": "npx hardhat compile",
+    "test": "npx hardhat test",
+    "coverage": "npx hardhat coverage",
+    "deploy:sepolia": "./scripts/deploy.sh -n sepolia",
+    "deploy:arbitrumSepolia": "./scripts/deploy.sh -n arbitrumSepolia",
+    "deploy:baseSepolia": "./scripts/deploy.sh -n baseSepolia",
+    "deploy:avalancheFuji": "./scripts/deploy.sh -n avalancheFuji",
+    "deploy:optimismSepolia": "./scripts/deploy.sh -n optimismSepolia",
+    "deploy:polygonAmoy": "./scripts/deploy.sh -n polygonAmoy",
+    "deploy:lineaSepolia": "./scripts/deploy.sh -n lineaSepolia",
+    "verify": "npx hardhat verify",
+    "clean": "npx hardhat clean",
+    "size": "npx hardhat size-contracts",
+    "gas": "REPORT_GAS=true npx hardhat test",
+    "node": "npx hardhat node",
+    "prettier": "prettier --write 'contracts/**/*.sol'",
+    "lint": "solhint 'contracts/**/*.sol'"
+  },
+  "keywords": [
+    "cctp",
+    "cctp-v2",
+    "circle",
+    "usdc",
+    "cross-chain",
+    "ethereum",
+    "solidity",
+    "defi",
+    "payments",
+    "hooks"
+  ],
+  "author": "OmniCheckout Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-chai-matchers": "^2.1.0",
+    "@nomicfoundation/hardhat-ethers": "^3.1.0",
+    "@nomicfoundation/hardhat-ignition": "^3.0.1",
+    "@nomicfoundation/hardhat-ignition-ethers": "^0.15.14",
+    "@nomicfoundation/hardhat-network-helpers": "^1.1.0",
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@nomicfoundation/hardhat-verify": "^2.1.1",
+    "@openzeppelin/contracts": "^5.4.0",
+    "@typechain/ethers-v6": "^0.5.1",
+    "@typechain/hardhat": "^9.1.0",
+    "@types/chai": "^5.2.2",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^22.18.0",
+    "chai": "^4.2.0",
+    "dotenv": "^17.2.1",
+    "ethers": "^6.15.0",
+    "hardhat": "^2.22.0",
+    "hardhat-gas-reporter": "^1.0.10",
+    "solidity-coverage": "^0.8.16",
+    "ts-node": "^10.9.2",
+    "typechain": "^8.3.2",
+    "typescript": "~5.8.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/omnicheckout"
+  }
+}
