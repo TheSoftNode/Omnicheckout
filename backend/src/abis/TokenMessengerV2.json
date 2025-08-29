@@ -1,0 +1,48 @@
+[
+  {
+    "type": "function",
+    "name": "depositForBurn",
+    "stateMutability": "nonpayable",
+    "inputs": [
+      { "name": "amount", "type": "uint256" },
+      { "name": "destinationDomain", "type": "uint32" },
+      { "name": "mintRecipient", "type": "bytes32" },
+      { "name": "burnToken", "type": "address" },
+      { "name": "destinationCaller", "type": "bytes32" },
+      { "name": "maxFee", "type": "uint256" },
+      { "name": "minFinalityThreshold", "type": "uint32" }
+    ],
+    "outputs": [
+      { "name": "nonce", "type": "uint64" }
+    ]
+  },
+  {
+    "type": "function", 
+    "name": "depositForBurnWithHook",
+    "stateMutability": "nonpayable",
+    "inputs": [
+      { "name": "amount", "type": "uint256" },
+      { "name": "destinationDomain", "type": "uint32" },
+      { "name": "mintRecipient", "type": "bytes32" },
+      { "name": "burnToken", "type": "address" },
+      { "name": "destinationCaller", "type": "bytes32" },
+      { "name": "maxFee", "type": "uint256" },
+      { "name": "minFinalityThreshold", "type": "uint32" },
+      { "name": "hookData", "type": "bytes" }
+    ],
+    "outputs": [
+      { "name": "nonce", "type": "uint64" }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "getMinFeeAmount",
+    "stateMutability": "view",
+    "inputs": [
+      { "name": "amount", "type": "uint256" }
+    ],
+    "outputs": [
+      { "name": "", "type": "uint256" }
+    ]
+  }
+]

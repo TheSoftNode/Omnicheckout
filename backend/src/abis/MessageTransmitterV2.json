@@ -1,0 +1,29 @@
+[
+  {
+    "type": "function",
+    "name": "receiveMessage",
+    "stateMutability": "nonpayable",
+    "inputs": [
+      { "name": "message", "type": "bytes" },
+      { "name": "attestation", "type": "bytes" }
+    ],
+    "outputs": [
+      { "name": "success", "type": "bool" }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "sendMessage",
+    "stateMutability": "nonpayable", 
+    "inputs": [
+      { "name": "destinationDomain", "type": "uint32" },
+      { "name": "recipient", "type": "bytes32" },
+      { "name": "destinationCaller", "type": "bytes32" },
+      { "name": "minFinalityThreshold", "type": "uint32" },
+      { "name": "messageBody", "type": "bytes" }
+    ],
+    "outputs": [
+      { "name": "nonce", "type": "uint64" }
+    ]
+  }
+]
